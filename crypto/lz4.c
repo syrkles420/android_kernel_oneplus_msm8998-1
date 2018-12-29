@@ -50,7 +50,7 @@ static int lz4_compress_crypto(struct crypto_tfm *tfm, const u8 *src,
 {
 	struct lz4_ctx *ctx = crypto_tfm_ctx(tfm);
 	int out_len = LZ4_compress_default(src, dst,
-		slen, *dlen, ctx->lz4_comp_mem);
+		slen, *dlen, crypto_tfm_ctx(tfm));
 
 	if (!out_len)
 		return -EINVAL;
