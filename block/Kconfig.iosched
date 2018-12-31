@@ -32,13 +32,9 @@ config IOSCHED_DEADLINE
 	  a new point in the service tree and doing a batch of IO from there
 	  in case of expiry.
 
-config IOSCHED_MAPLE
-	tristate "Maple I/O scheduler"
-	default y
-
 config IOSCHED_TRIPNDROID
 	tristate "TripNDroid IO Scheduler"
-	default n
+	default y
 	---help---
 	  The TripNDroid IO Scheduler is based on noop, deadline and vr
 	  it uses deadlines to ensure some fairness. The scheduler is build
@@ -125,9 +121,6 @@ choice
 	config DEFAULT_NOOP
 		bool "No-op"
 
-	config DEFAULT_MAPLE
-		bool "Maple" if IOSCHED_MAPLE=y
-
 endchoice
 
 config DEFAULT_IOSCHED
@@ -140,7 +133,6 @@ config DEFAULT_IOSCHED
 	default "bfq" if DEFAULT_BFQ
 	default "anxiety" if DEFAULT_ANXIETY
 	default "noop" if DEFAULT_NOOP
-	default "maple" if DEFAULT_MAPLE
 
 endmenu
 
