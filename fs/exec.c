@@ -1459,8 +1459,7 @@ EXPORT_SYMBOL(remove_arg_zero);
  */
 int search_binary_handler(struct linux_binprm *bprm)
 {
-	unsigned int depth = bprm->recursion_depth;
-	int try,retval;
+	bool need_retry = IS_ENABLED(CONFIG_MODULES);
 	struct linux_binfmt *fmt;
 	int retval;
 
@@ -1487,33 +1486,8 @@ int search_binary_handler(struct linux_binprm *bprm)
 		if (retval < 0 && !bprm->mm) {
 			/* we got to flush_old_exec() and failed after it */
 			read_unlock(&binfmt_lock);
-			retval = fn(bprm, regs);
-			/*
-			 * Restore the depth counter to its starting value
-			 * in this call, so we don't have to rely on every
-			 * load_binary function to restore it on return.
-			 */
-			bprm->recursion_depth = depth;
-			if (retval >= 0) {
-				if (depth == 0)
-					tracehook_report_exec(fmt, bprm, regs);
-				put_binfmt(fmt);
-				allow_write_access(bprm->file);
-				if (bprm->file)
-					fput(bprm->file);
-				bprm->file = NULL;
-				current->did_exec = 1;
-				proc_exec_connector(current);
-				return retval;
-			}
-			read_lock(&binfmt_lock);
-			put_binfmt(fmt);
-			if (retval != -ENOEXEC || bprm->mm == NULL)
-				break;
-			if (!bprm->file) {
-				read_unlock(&binfmt_lock);
-				return retval;
-			}
+			force_sigsegv(SIGSEGV, current);
+			return retval;
 		}
 		if (retval != -ENOEXEC || !bprm->file) {
 			read_unlock(&binfmt_lock);
